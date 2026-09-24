@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist Currency Converter</title>
+    <!-- Tailwind CSS for modern utility styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0a0a0a',
+                            card: '#141414',
+                            border: '#262626',
+                            text: '#f5f5f7',
+                            muted: '#8e8e93',
+                            accent: '#3b82f6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #f5f5f7;
+        }
+        /* Hide scrollbars for clean aesthetic */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #262626;
+            border-radius: 9999px;
+        }
+        /* Custom smooth transition */
+        .transition-smooth {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-[#0a0a0a] text-[#f5f5f7] min-h-screen flex flex-col justify-between selection:bg-blue-500/30 selection:text-blue-200">
+
+    <header class="w-full max-w-xl mx-auto px-6 pt-10 pb-4">
+        <!-- Attribution Badge -->
+        <div class="mb-6 flex justify-center">
+            <div class="inline-flex items-center gap-2 bg-[#141414] border border-[#262626] px-3.5 py-1.5 rounded-full text-xs text-[#8e8e93] shadow-sm">
+                <span>Made by</span>
+                <a href="https://thorifzhafran.com" target="_blank" rel="noopener noreferrer" class="text-white font-medium hover:text-blue-400 underline decoration-[#333] hover:decoration-blue-400 transition-colors">
+                    thorifzhafran.com
+                </a>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-semibold tracking-tight text-white flex items-center gap-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    Currency
+                </h1>
+                <p class="text-xs text-[#8e8e93] mt-0.5">USD · IDR · MYR</p>
+            </div>
+            <button id="refresh-btn" onclick="fetchRates(true)" class="group flex items-center gap-2 text-xs font-medium text-[#8e8e93] hover:text-white bg-[#141414] hover:bg-[#1f1f1f] border border-[#262626] px-3.5 py-2 rounded-xl transition-smooth shadow-sm active:scale-95">
+                <svg id="refresh-icon" class="w-3.5 h-3.5 transition-transform duration-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span id="refresh-text">Refresh rates</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="w-full max-w-xl mx-auto px-6 flex-1 flex flex-col justify-center pb-12">
+        <div id="converter-container" class="space-y-3">
+            
+            <!-- USD Card -->
+            <div class="group bg-[#141414] border border-[#262626] hover:border-[#333] rounded-2xl p-5 transition-smooth focus-within:border-blue-500/50 focus-within:ring-1 focus-within:ring-blue-500/20">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs tracking-wider border border-emerald-500/20">US</div>
+                        <div>
+                            <span class="text-sm font-semibold text-white">USD</span>
+                            <span class="text-xs text-[#8e8e93] block">United States Dollar</span>
+                        </div>
+                    </div>
+                    <span class="text-xs font-mono text-[#8e8e93] bg-[#1f1f1f] px-2.5 py-1 rounded-lg border border-[#262626]">1 USD</span>
+                </div>
+                <div class="relative flex items-center">
+                    <span class="text-xl font-medium text-[#8e8e93] mr-2">$</span>
+                    <input type="text" inputmode="decimal" id="input-USD" data-currency="USD" placeholder="0.00" 
+                        class="w-full bg-transparent text-2xl md:text-3xl font-semibold text-white placeholder-[#333] focus:outline-none font-mono tracking-tight"
+                        oninput="handleInput(this)" onfocus="setActiveCurrency('USD')" />
+                </div>
+            </div>
+
+            <!-- IDR Card -->
+            <div class="group bg-[#141414] border border-[#262626] hover:border-[#333] rounded-2xl p-5 transition-smooth focus-within:border-blue-500/50 focus-within:ring-1 focus-within:ring-blue-500/20">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center font-bold text-xs tracking-wider border border-red-500/20">ID</div>
+                        <div>
+                            <span class="text-sm font-semibold text-white">IDR</span>
+                            <span class="text-xs text-[#8e8e93] block">Indonesian Rupiah</span>
+                        </div>
+                    </div>
+                    <span class="text-xs font-mono text-[#8e8e93] bg-[#1f1f1f] px-2.5 py-1 rounded-lg border border-[#262626]">1 IDR</span>
+                </div>
+                <div class="relative flex items-center">
+                    <span class="text-xl font-medium text-[#8e8e93] mr-2">Rp</span>
+                    <input type="text" inputmode="decimal" id="input-IDR" data-currency="IDR" placeholder="0" 
+                        class="w-full bg-transparent text-2xl md:text-3xl font-semibold text-white placeholder-[#333] focus:outline-none font-mono tracking-tight"
+                        oninput="handleInput(this)" onfocus="setActiveCurrency('IDR')" />
+                </div>
+            </div>
+
+            <!-- MYR Card -->
+            <div class="group bg-[#141414] border border-[#262626] hover:border-[#333] rounded-2xl p-5 transition-smooth focus-within:border-blue-500/50 focus-within:ring-1 focus-within:ring-blue-500/20">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold text-xs tracking-wider border border-amber-500/20">MY</div>
+                        <div>
+                            <span class="text-sm font-semibold text-white">MYR</span>
+                            <span class="text-xs text-[#8e8e93] block">Malaysian Ringgit</span>
+                        </div>
+                    </div>
+                    <span class="text-xs font-mono text-[#8e8e93] bg-[#1f1f1f] px-2.5 py-1 rounded-lg border border-[#262626]">1 MYR</span>
+                </div>
+                <div class="relative flex items-center">
+                    <span class="text-xl font-medium text-[#8e8e93] mr-2">RM</span>
+                    <input type="text" inputmode="decimal" id="input-MYR" data-currency="MYR" placeholder="0.00" 
+                        class="w-full bg-transparent text-2xl md:text-3xl font-semibold text-white placeholder-[#333] focus:outline-none font-mono tracking-tight"
+                        oninput="handleInput(this)" onfocus="setActiveCurrency('MYR')" />
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Status & timestamp badge -->
+        <div class="mt-6 flex items-center justify-between px-2 text-xs text-[#8e8e93]">
+            <span id="status-text" class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+                Live rates loaded
+            </span>
+            <span id="timestamp" class="font-mono">Updated just now</span>
+        </div>
+    </main>
+
+    <footer class="w-full max-w-xl mx-auto px-6 py-4 border-t border-[#1a1a1a] flex items-center justify-between text-xs text-[#666]">
+        <span>Lightweight & fast conversion</span>
+        <span class="font-mono">USD / IDR / MYR</span>
+    </footer>
+
+    <script>
+        // Base currency rates relative to USD (fallback baseline)
+        let rates = {
+            USD: 1.0,
+            IDR: 15850.0,
+            MYR: 4.45
+        };
+
+        let currentActiveCurrency = 'USD';
+        let lastValidValues = {
+            USD: '1',
+            IDR: '15850',
+            MYR: '4.45'
+        };
+
+        // Initialize app on load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Set initial value in USD
+            document.getElementById('input-USD').value = '1';
+            convertFrom('USD', 1);
+            fetchRates(false);
+        });
+
+        function setActiveCurrency(curr) {
+            currentActiveCurrency = curr;
+        }
+
+        // Handle user input in any field
+        function handleInput(element) {
+            const currency = element.getAttribute('data-currency');
+            let rawValue = element.value.replace(/,/g, '');
+
+            // Allow typing empty or single decimal point
+            if (rawValue === '' || rawValue === '.') {
+                clearAllExcept(currency);
+                return;
+            }
+
+            let numericValue = parseFloat(rawValue);
+            if (isNaN(numericValue)) {
+                return;
+            }
+
+            lastValidValues[currency] = rawValue;
+            currentActiveCurrency = currency;
+            convertFrom(currency, numericValue);
+        }
+
+        // Convert given currency amount to other currencies
+        function convertFrom(sourceCurrency, amount) {
+            // Convert source to USD first
+            const amountInUSD = amount / rates[sourceCurrency];
+
+            const currencies = ['USD', 'IDR', 'MYR'];
+            currencies.forEach(curr => {
+                if (curr === sourceCurrency) return;
+
+                const inputEl = document.getElementById(`input-${curr}`);
+                // Skip updating the currently focused element to avoid disrupting cursor
+                if (document.activeElement === inputEl) return;
+
+                const convertedValue = amountInUSD * rates[curr];
+                
+                // Format nicely depending on scale
+                if (curr === 'IDR') {
+                    inputEl.value = Math.round(convertedValue).toLocaleString('en-US');
+                } else {
+                    inputEl.value = convertedValue.toFixed(2);
+                }
+            });
+        }
+
+        function clearAllExcept(activeCurr) {
+            const currencies = ['USD', 'IDR', 'MYR'];
+            currencies.forEach(curr => {
+                if (curr !== activeCurr) {
+                    const el = document.getElementById(`input-${curr}`);
+                    if (document.activeElement !== el) {
+                        el.value = '';
+                    }
+                }
+            });
+        }
+
+        // Fetch latest rates via free public API
+        async function fetchRates(isManual = false) {
+            const refreshBtn = document.getElementById('refresh-btn');
+            const refreshIcon = document.getElementById('refresh-icon');
+            const statusText = document.getElementById('status-text');
+            const timestamp = document.getElementById('timestamp');
+
+            if (isManual) {
+                refreshIcon.classList.add('animate-spin');
+                statusText.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span> Updating rates...';
+            }
+
+            try {
+                // Using open.er-api.com for reliable free JSON currency conversion rates
+                const response = await fetch('https://open.er-api.com/v6/latest/USD');
+                if (!response.ok) throw new Error('Network response failed');
+                
+                const data = await response.json();
+                if (data && data.rates) {
+                    if (data.rates.IDR) rates.IDR = data.rates.IDR;
+                    if (data.rates.MYR) rates.MYR = data.rates.MYR;
+                    
+                    statusText.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Live rates updated';
+                    
+                    const now = new Date();
+                    timestamp.textContent = `Updated ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                }
+            } catch (error) {
+                console.warn('Using fallback baseline rates due to network error:', error);
+                statusText.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span> Offline mode (cached rates)';
+            } finally {
+                if (isManual) {
+                    setTimeout(() => {
+                        refreshIcon.classList.remove('animate-spin');
+                    }, 400);
+                }
+
+                // Re-trigger conversion based on active input
+                const activeInput = document.getElementById(`input-${currentActiveCurrency}`);
+                if (activeInput && activeInput.value) {
+                    const val = parseFloat(activeInput.value.replace(/,/g, ''));
+                    if (!isNaN(val)) {
+                        convertFrom(currentActiveCurrency, val);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
